@@ -1,32 +1,28 @@
 import { MMKV } from 'react-native-mmkv';
 import { log, generateId } from '../logger';
+import { TStorageAdapter } from '../types';
 
-export type TStorageAdapter = {
-  get(key: string): Promise<string | null>;
-  set(key: string, value: string): Promise<void>;
-  remove(key: string): Promise<void>;
-  clear(): Promise<void>;
-  getAllKeys(): Promise<string[]>;
-};
-
-export class MMKVStorageAdapter implements TStorageAdapter {
+export class MMKVStorageAdapter<
+  TSchema extends Record<string, unknown> = Record<string, string>,
+> implements TStorageAdapter<TSchema> {
   private storage: MMKV;
 
   constructor(id = 'rn-storage-kit.default') {
     this.storage = new MMKV({ id });
   }
 
-  async get(key: string): Promise<string | null> {
+  async get<K extends keyof TSchema & string>(key: K): Promise<TSchema[K] | null> {
     const start = Date.now();
     try {
-      const result = this.storage.getString(key) ?? null;
+      const raw = this.storage.getString(key) ?? null;
+      const result = raw !== null ? (JSON.parse(raw) as TSchema[K]) : null;
       log({
         id: generateId(),
         timestamp: Date.now(),
         adapter: 'mmkv',
         operation: 'get',
         key,
-        result,
+        result: raw,
         durationMs: Date.now() - start,
         secure: false,
       });
@@ -46,17 +42,18 @@ export class MMKVStorageAdapter implements TStorageAdapter {
     }
   }
 
-  async set(key: string, value: string): Promise<void> {
+  async set<K extends keyof TSchema & string>(key: K, value: TSchema[K]): Promise<void> {
     const start = Date.now();
     try {
-      this.storage.set(key, value);
+      const serialized = JSON.stringify(value);
+      this.storage.set(key, serialized);
       log({
         id: generateId(),
         timestamp: Date.now(),
         adapter: 'mmkv',
         operation: 'set',
         key,
-        value,
+        value: serialized,
         durationMs: Date.now() - start,
         secure: false,
       });

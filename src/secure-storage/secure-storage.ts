@@ -1,7 +1,7 @@
 import * as Keychain from 'react-native-keychain';
 import { MMKV } from 'react-native-mmkv';
 import { log, generateId } from '../logger';
-import { TStorageAdapter } from '../mmkv-storage';
+import { TStorageAdapter } from '../types';
 
 // ─── Key index ─────────────────────────────────────────────────────────────────
 // Keychain has no key-enumeration API so we maintain a small index in MMKV.
@@ -43,12 +43,15 @@ function clearKeyIndex(): void {
 
 const MASKED = '***';
 
-export class SecureStorageAdapter implements TStorageAdapter {
-  async get(key: string): Promise<string | null> {
+export class SecureStorageAdapter<TSchema extends Record<string, unknown> = Record<string, string>>
+  implements TStorageAdapter<TSchema>
+{
+  async get<K extends keyof TSchema & string>(key: K): Promise<TSchema[K] | null> {
     const start = Date.now();
     try {
       const creds = await Keychain.getGenericPassword({ service: key });
-      const result = creds ? creds.password : null;
+      const raw = creds ? creds.password : null;
+      const result = raw !== null ? (JSON.parse(raw) as TSchema[K]) : null;
       log({
         id: generateId(),
         timestamp: Date.now(),
@@ -75,10 +78,11 @@ export class SecureStorageAdapter implements TStorageAdapter {
     }
   }
 
-  async set(key: string, value: string): Promise<void> {
+  async set<K extends keyof TSchema & string>(key: K, value: TSchema[K]): Promise<void> {
     const start = Date.now();
     try {
-      await Keychain.setGenericPassword(key, value, { service: key });
+      const serialized = JSON.stringify(value);
+      await Keychain.setGenericPassword(key, serialized, { service: key });
       addToKeyIndex(key);
       log({
         id: generateId(),

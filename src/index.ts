@@ -1,3 +1,6 @@
+// ─── Types ─────────────────────────────────────────────────────────────────────
+export * from './types';
+
 // ─── Storage adapters ──────────────────────────────────────────────────────────
 export * from './mmkv-storage';
 export * from './secure-storage';
