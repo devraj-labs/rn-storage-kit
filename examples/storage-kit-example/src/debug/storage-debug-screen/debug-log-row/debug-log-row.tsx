@@ -1,7 +1,7 @@
 import { Box, CorePressable, CoreText, Row } from '@devraj-labs/vajra-ui-core';
 import React, { memo, useState } from 'react';
 import { Clipboard } from 'react-native';
-import { TStorageLogEntry } from '../../../logger/logger-types';
+import { TStorageLogEntry } from '@devraj-labs/rn-storage-kit';
 import { DC } from '../debug-colors';
 import { formatTime } from '../debug-helpers';
 

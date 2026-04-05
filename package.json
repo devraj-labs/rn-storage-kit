@@ -56,8 +56,5 @@
     "type": "git",
     "url": "https://github.com/devraj-labs/rn-storage-kit.git"
   },
-  "license": "MIT",
-  "dependencies": {
-    "@devraj-labs/vajra-ui-core": "^2.0.1"
-  }
+  "license": "MIT"
 }

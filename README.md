@@ -1,11 +1,10 @@
 # rn-storage-kit
 
-A React Native storage library with a unified adapter interface, structured logging, and a developer debug UI.
+A React Native storage library with a unified adapter interface and structured logging.
 
 - **MMKV** for regular key-value storage
 - **Keychain** for sensitive values (tokens, passwords)
 - **Logger** with levels, TTL, MMKV persistence, and production safety
-- **Debug UI** — floating panel and full-screen inspector, dev-only
 
 ---
 
@@ -149,42 +148,6 @@ Logs are persisted across Metro fast-refresh in a dedicated MMKV instance (`rn-s
 
 ---
 
-## Debug UI
-
-Two components are exported. Both render `null` in production (`!__DEV__`).
-
-### `StorageDebugPanel`
-
-Floating action button (FAB) that opens a slide-up modal showing the live log stream.
-
-```tsx
-import { StorageDebugPanel } from '@devraj-labs/rn-storage-kit';
-
-// Place outside your ScrollView, at the root of the screen
-<StorageDebugPanel />
-```
-
-Features: live log list, clear button, colour-coded by adapter and error state, secure entries shown in purple with masked values.
-
-### `StorageDebugScreen`
-
-Full-featured debug screen with two tabs.
-
-```tsx
-import { StorageDebugScreen } from '@devraj-labs/rn-storage-kit';
-
-<StorageDebugScreen />
-```
-
-| Tab | Features |
-|-----|----------|
-| **Logs** | Live log stream, search by key/operation/error, toggle newest/oldest sort, clear |
-| **MMKV Data** | Browse all keys and values in the default MMKV store, tap to expand, refresh, clear |
-
-Secure (Keychain) data is intentionally excluded from the MMKV Data tab.
-
----
-
 ## API reference
 
 ### `MMKVStorageAdapter`
@@ -219,13 +182,10 @@ Same interface as `MMKVStorageAdapter`. Backed by Keychain via `setGenericPasswo
 
 ```
 src/
-  mmkv-storage/          MMKVStorageAdapter + TStorageAdapter type
-  secure-storage/        SecureStorageAdapter (Keychain-backed)
-  logger/                Logger state, enableLogger, log levels, MMKV persistence
-  debug/
-    storage-debug-panel/ FAB + modal log viewer
-    storage-debug-screen/ Full debug screen (data tab + logs tab)
-  index.ts               Public barrel
+  mmkv-storage/    MMKVStorageAdapter + TStorageAdapter type
+  secure-storage/  SecureStorageAdapter (Keychain-backed)
+  logger/          Logger state, enableLogger, log levels, MMKV persistence
+  index.ts         Public barrel
 ```
 
 ---

@@ -1,5 +1,5 @@
 // Types for the StorageDebugPanel component.
 
 export type TLogRowProps = {
-  item: import('../../logger').TStorageLogEntry;
+  item: import('@devraj-labs/rn-storage-kit').TStorageLogEntry;
 };
