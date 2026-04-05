@@ -9,11 +9,16 @@ import { DebugDataRow } from './debug-data-row';
 import { DebugEmpty } from './debug-empty';
 import { DebugFab } from './debug-fab';
 import { DebugHeader } from './debug-header';
-import { DEFAULT_MMKV_ID, readMmkvData } from './debug-helpers';
+import { ALL_MMKV_IDS, readMmkvData } from './debug-helpers';
 import { DebugLogRow } from './debug-log-row';
 import { DebugTabBar } from './debug-tab-bar';
 import { DebugToolbar } from './debug-toolbar';
 import { TDebugTab, TSortOrder } from './storage-debug-screen-types';
+
+// Module-level open signal — lets StorageDebugFab trigger StorageDebugScreen
+// without shared React state or context. Both are siblings in the tree.
+let _openDebug: (() => void) | null = null;
+export const openStorageDebug = () => _openDebug?.();
 
 const StorageDebugScreenComponent: React.FC = () => {
   if (!__DEV__) return null;
@@ -26,6 +31,11 @@ const StorageDebugScreenComponent: React.FC = () => {
   const [sort, setSort] = useState<TSortOrder>('newest');
 
   useEffect(() => {
+    _openDebug = () => setVisible(true);
+    return () => { _openDebug = null; };
+  }, []);
+
+  useEffect(() => {
     const handler = () => setLogs(getLogs());
     onNewLog(handler);
     return () => offNewLog(handler);
@@ -33,7 +43,7 @@ const StorageDebugScreenComponent: React.FC = () => {
 
   useEffect(() => {
     if (visible && activeTab === 'data') {
-      setMmkvData(readMmkvData(DEFAULT_MMKV_ID));
+      setMmkvData(readMmkvData());
     }
   }, [visible, activeTab]);
 
@@ -67,10 +77,10 @@ const StorageDebugScreenComponent: React.FC = () => {
   }, []);
 
   const handleClearMmkv = useCallback(() => {
-    try {
-      new MMKV({ id: DEFAULT_MMKV_ID }).clearAll();
-      setMmkvData({});
-    } catch {}
+    for (const id of ALL_MMKV_IDS) {
+      try { new MMKV({ id }).clearAll(); } catch (_e) { /* ignore */ }
+    }
+    setMmkvData({});
   }, []);
 
   const toggleSort = useCallback(() => {
@@ -78,63 +88,65 @@ const StorageDebugScreenComponent: React.FC = () => {
   }, []);
 
   const refreshData = useCallback(() => {
-    setMmkvData(readMmkvData(DEFAULT_MMKV_ID));
+    setMmkvData(readMmkvData());
   }, []);
 
   return (
-    <>
-      <DebugFab onPress={() => setVisible(true)} />
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={() => setVisible(false)}>
+      <Box flex={1} justify="flex-end" bg={DC.overlay}>
+        <Col h="80%" bg={DC.bg} roundedT={16} style={{ overflow: 'hidden' }}>
+          <DebugHeader
+            activeTab={activeTab}
+            onClearLogs={handleClearLogs}
+            onClearData={handleClearMmkv}
+            onClose={() => setVisible(false)}
+          />
 
-      <Modal visible={visible} animationType="slide" transparent onRequestClose={() => setVisible(false)}>
-        <Box flex={1} justify="flex-end" bg={DC.overlay}>
-          <Col h="80%" bg={DC.bg} roundedT={16} style={{ overflow: 'hidden' }}>
+          <DebugTabBar active={activeTab} onChange={setActiveTab} />
 
-            <DebugHeader
-              activeTab={activeTab}
-              onClearLogs={handleClearLogs}
-              onClearData={handleClearMmkv}
-              onClose={() => setVisible(false)}
-            />
+          <DebugToolbar
+            activeTab={activeTab}
+            search={search}
+            sort={sort}
+            onSearch={setSearch}
+            onToggleSort={toggleSort}
+            onRefresh={refreshData}
+          />
 
-            <DebugTabBar active={activeTab} onChange={setActiveTab} />
-
-            <DebugToolbar
-              activeTab={activeTab}
-              search={search}
-              sort={sort}
-              onSearch={setSearch}
-              onToggleSort={toggleSort}
-              onRefresh={refreshData}
-            />
-
-            {activeTab === 'logs' ? (
-              filteredLogs.length === 0 ? (
-                <DebugEmpty text={search ? 'No logs match your search.' : 'No logs yet. Make a storage call.'} />
-              ) : (
-                <FlatList
-                  data={filteredLogs}
-                  keyExtractor={(item) => item.id}
-                  renderItem={({ item }) => <DebugLogRow item={item} />}
-                  contentContainerStyle={{ padding: 8 }}
-                  keyboardShouldPersistTaps="handled"
-                />
-              )
-            ) : filteredDataEntries.length === 0 ? (
-              <DebugEmpty text={search ? 'No keys match your search.' : 'MMKV store is empty.'} />
+          {activeTab === 'logs' ? (
+            filteredLogs.length === 0 ? (
+              <DebugEmpty text={search ? 'No logs match your search.' : 'No logs yet. Make a storage call.'} />
             ) : (
               <FlatList
-                data={filteredDataEntries}
-                keyExtractor={([k]) => k}
-                renderItem={({ item: [k, v] }) => <DebugDataRow itemKey={k} value={v} />}
+                data={filteredLogs}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => <DebugLogRow item={item} />}
                 contentContainerStyle={{ padding: 8 }}
                 keyboardShouldPersistTaps="handled"
               />
-            )}
-          </Col>
-        </Box>
-      </Modal>
-    </>
+            )
+          ) : filteredDataEntries.length === 0 ? (
+            <DebugEmpty text={search ? 'No keys match your search.' : 'MMKV store is empty.'} />
+          ) : (
+            <FlatList
+              data={filteredDataEntries}
+              keyExtractor={([k]) => k}
+              renderItem={({ item: [k, v] }) => <DebugDataRow itemKey={k} value={v} />}
+              contentContainerStyle={{ padding: 8 }}
+              keyboardShouldPersistTaps="handled"
+            />
+          )}
+        </Col>
+      </Box>
+    </Modal>
   );
 };
 
 export const StorageDebugScreen = memo(StorageDebugScreenComponent);
+
+const StorageDebugFabComponent: React.FC = () => {
+  if (!__DEV__) return null;
+  return <DebugFab onPress={openStorageDebug} />;
+};
+
+export const StorageDebugFab = memo(StorageDebugFabComponent);

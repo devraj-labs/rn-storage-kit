@@ -9,7 +9,6 @@ type TDebugFabProps = {
 export function DebugFab({ onPress }: TDebugFabProps) {
   return (
     <CorePressable
-      position="absolute"
       bottom={40}
       right={20}
       w={48}
@@ -18,8 +17,13 @@ export function DebugFab({ onPress }: TDebugFabProps) {
       bg="#1a1a2e"
       align="center"
       justify="center"
-      style={{ elevation: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.4, shadowRadius: 4, zIndex: 9999 }}
-      onPress={onPress}>
+      style={{
+        position: 'absolute',
+        bottom: 80,
+        right: 20,
+      }}
+      onPress={onPress}
+    >
       <CoreText fontSize={13} fontWeight="700" color={DC.teal} style={{ fontFamily: 'monospace' }}>
         DB
       </CoreText>
