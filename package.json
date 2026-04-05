@@ -11,14 +11,7 @@
     }
   },
   "publishConfig": {
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
-    "exports": {
-      ".": {
-        "import": "./dist/index.js",
-        "types": "./dist/index.d.ts"
-      }
-    }
+    "access": "public"
   },
   "files": [
     "dist"
@@ -64,7 +57,7 @@
     "url": "https://github.com/devraj-labs/rn-storage-kit.git"
   },
   "license": "MIT",
-  "publishConfig": {
-    "access": "public"
+  "dependencies": {
+    "@devraj-labs/vajra-ui-core": "^2.0.1"
   }
 }
