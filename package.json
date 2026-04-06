@@ -57,6 +57,18 @@
       "prettier --write"
     ]
   },
+  "keywords": [
+    "react-native",
+    "storage",
+    "mmkv",
+    "keychain",
+    "secure-storage",
+    "async-storage",
+    "logger",
+    "typescript",
+    "ios",
+    "android"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/devraj-labs/rn-storage-kit.git"
