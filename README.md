@@ -1,10 +1,25 @@
-# rn-storage-kit
+<div align="center">
 
-A React Native storage library with a unified adapter interface and structured logging.
+<h1>RN Storage Kit</h1>
 
-- **MMKV** for regular key-value storage
-- **Keychain** for sensitive values (tokens, passwords)
-- **Logger** with levels, TTL, MMKV persistence, and production safety
+<p>Unified storage for React Native. One interface — fast key-value, encrypted secrets, and structured logs.</p>
+
+[![npm version](https://img.shields.io/npm/v/@devraj-labs/rn-storage-kit?style=flat-square&color=blue)](https://www.npmjs.com/package/@devraj-labs/rn-storage-kit)
+[![license](https://img.shields.io/npm/l/@devraj-labs/rn-storage-kit?style=flat-square)](./LICENSE)
+[![react-native](https://img.shields.io/badge/react--native-%3E%3D0.73-blue?style=flat-square)](https://reactnative.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?style=flat-square)](https://www.typescriptlang.org)
+
+</div>
+
+---
+
+**rn-storage-kit** gives you three batteries-included storage primitives behind a single, consistent `async get/set/remove/clear` interface:
+
+| Primitive | Backed by | Use for |
+|-----------|-----------|---------|
+| `MMKVStorageAdapter` | [react-native-mmkv](https://github.com/mrousavy/react-native-mmkv) | Preferences, cache, state |
+| `SecureStorageAdapter` | [react-native-keychain](https://github.com/oblador/react-native-keychain) | Tokens, passwords, secrets |
+| Logger | MMKV-persisted, TTL-aware | Debug traces, production safety |
 
 ---
 
@@ -20,9 +35,9 @@ npm install @devraj-labs/rn-storage-kit
 npm install react-native-mmkv react-native-keychain
 ```
 
-Follow the native setup guides for both:
-- [react-native-mmkv](https://github.com/mrousavy/react-native-mmkv)
-- [react-native-keychain](https://github.com/oblador/react-native-keychain)
+Follow the native setup guides for both libraries:
+- [react-native-mmkv setup](https://github.com/mrousavy/react-native-mmkv)
+- [react-native-keychain setup](https://github.com/oblador/react-native-keychain)
 
 ---
 
@@ -30,11 +45,13 @@ Follow the native setup guides for both:
 
 ### MMKV storage
 
+Fast, synchronous storage wrapped in a promise-based interface.
+
 ```ts
 import { MMKVStorageAdapter } from '@devraj-labs/rn-storage-kit';
 
 const storage = new MMKVStorageAdapter();
-// or with a custom instance id:
+// optionally scope to a named MMKV instance:
 const storage = new MMKVStorageAdapter('my-app.settings');
 
 await storage.set('theme', 'dark');
@@ -45,6 +62,8 @@ const keys = await storage.getAllKeys();
 ```
 
 ### Secure storage (Keychain)
+
+Identical interface — swap the adapter, get hardware-backed encryption.
 
 ```ts
 import { SecureStorageAdapter } from '@devraj-labs/rn-storage-kit';
@@ -58,25 +77,26 @@ await secure.clear();
 const keys = await secure.getAllKeys();
 ```
 
-Secure values are stored in Keychain per-key via `setGenericPassword`. A key index is maintained in a separate MMKV instance (`rn-storage-kit.secure-index`) so `getAllKeys` and `clear` work without Keychain enumeration support.
+> Secure values are stored in Keychain via `setGenericPassword` per key. A key index is maintained in a dedicated MMKV instance (`rn-storage-kit.secure-index`) so `getAllKeys` and `clear` work without Keychain enumeration support.
 
 ---
 
 ## Logger
 
-Logging is **disabled by default** and never runs in production unless explicitly opted in.
+Production-safe structured logging for every storage operation. **Disabled by default.**
 
 ### Enable
+
+Call once at app startup, before any storage operations:
 
 ```ts
 import { enableLogger } from '@devraj-labs/rn-storage-kit';
 
-// Call once at app startup, before any storage calls
 enableLogger({
-  level: 'debug',       // 'none' | 'error' | 'info' | 'debug'
-  maxEntries: 200,      // FIFO cap (default: 200)
-  ttl: 0,               // auto-evict entries older than N ms (0 = off)
-  allowInProduction: false,
+  level: 'debug',           // 'none' | 'error' | 'info' | 'debug'
+  maxEntries: 200,          // FIFO cap (default: 200)
+  ttl: 0,                   // auto-evict entries older than N ms (0 = off)
+  allowInProduction: false, // never logs in prod unless explicitly set
 });
 ```
 
@@ -117,7 +137,7 @@ offNewLog(handler);
 | `info` | All operations — key and adapter visible, values/results stripped |
 | `debug` | Full detail — key, value, result, duration. Secure values are always masked as `***` |
 
-### Log entry shape (`TStorageLogEntry`)
+### Log entry shape
 
 ```ts
 type TStorageLogEntry = {
@@ -136,7 +156,7 @@ type TStorageLogEntry = {
 
 ### Persistence
 
-Logs are persisted across Metro fast-refresh in a dedicated MMKV instance (`rn-storage-kit.logs`). Persistence writes happen asynchronously via `setImmediate` — storage call performance is unaffected. Secure values never reach the log store.
+Logs survive Metro fast-refresh via a dedicated MMKV instance (`rn-storage-kit.logs`). Writes are async via `setImmediate` — zero impact on storage call performance. Secure values never reach the log store.
 
 ---
 
@@ -144,7 +164,7 @@ Logs are persisted across Metro fast-refresh in a dedicated MMKV instance (`rn-s
 
 - Logger is a no-op in production unless `allowInProduction: true` is passed to `enableLogger`.
 - Secure adapter values are always logged as `***`, regardless of log level.
-- At `info` level, `value` and `result` fields are stripped from all entries.
+- At `info` level, `value` and `result` fields are stripped from all log entries.
 
 ---
 
@@ -185,6 +205,7 @@ src/
   mmkv-storage/    MMKVStorageAdapter + TStorageAdapter type
   secure-storage/  SecureStorageAdapter (Keychain-backed)
   logger/          Logger state, enableLogger, log levels, MMKV persistence
+  types/           Shared type definitions
   index.ts         Public barrel
 ```
 
