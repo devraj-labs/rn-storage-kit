@@ -1,13 +1,14 @@
 {
   "name": "@devraj-labs/rn-storage-kit",
-  "version": "0.2.0",
-  "description": "Unified storage API for React Native — wraps AsyncStorage and react-native-keychain with the same interface",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "version": "0.3.0",
+  "description": "Unified storage API for React Native — MMKV key-value, Keychain secrets, and structured logging behind one interface",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "exports": {
     ".": {
-      "import": "./src/index.ts",
-      "require": "./src/index.ts"
+      "import": "./dist/src/index.js",
+      "require": "./dist/src/index.js",
+      "types": "./dist/src/index.d.ts"
     }
   },
   "publishConfig": {
@@ -18,6 +19,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "test": "jest",
     "lint": "eslint src --ext .ts,.tsx",
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
     "release": "npm run build && npm publish --access public",
@@ -30,6 +32,7 @@
     "react-native-mmkv": ">=3.0.0"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.0",
     "@types/react": "^18.2.0",
     "@types/react-native": "^0.73.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
@@ -37,6 +40,8 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.34.0",
     "eslint-plugin-react-native": "^4.1.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.0",
     "husky": "^9.0.0",
     "lint-staged": "^15.0.0",
     "prettier": "^3.2.0",
@@ -56,5 +61,17 @@
     "type": "git",
     "url": "https://github.com/devraj-labs/rn-storage-kit.git"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": ["/node_modules/", "/examples/"],
+    "moduleNameMapper": {
+      "react-native-mmkv": "<rootDir>/src/__mocks__/react-native-mmkv.ts",
+      "react-native-keychain": "<rootDir>/src/__mocks__/react-native-keychain.ts"
+    },
+    "globals": {
+      "__DEV__": true
+    }
+  }
 }
