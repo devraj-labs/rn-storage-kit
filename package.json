@@ -1,6 +1,6 @@
 {
   "name": "@devraj-labs/rn-storage-kit",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Unified storage API for React Native — MMKV key-value, Keychain secrets, and structured logging behind one interface",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -77,7 +77,10 @@
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
-    "testPathIgnorePatterns": ["/node_modules/", "/examples/"],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/examples/"
+    ],
     "moduleNameMapper": {
       "react-native-mmkv": "<rootDir>/src/__mocks__/react-native-mmkv.ts",
       "react-native-keychain": "<rootDir>/src/__mocks__/react-native-keychain.ts"
