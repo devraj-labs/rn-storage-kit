@@ -1,6 +1,6 @@
 {
   "name": "@devraj-labs/rn-storage-kit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Unified storage API for React Native — wraps AsyncStorage and react-native-keychain with the same interface",
   "main": "src/index.ts",
   "types": "src/index.ts",
