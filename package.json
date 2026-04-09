@@ -2,13 +2,13 @@
   "name": "@devraj-labs/rn-storage-kit",
   "version": "0.3.1",
   "description": "Unified storage API for React Native — MMKV key-value, Keychain secrets, and structured logging behind one interface",
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/src/index.js",
-      "require": "./dist/src/index.js",
-      "types": "./dist/src/index.d.ts"
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
     }
   },
   "publishConfig": {
